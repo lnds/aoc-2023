@@ -4,13 +4,13 @@ fn main() {
     dbg!(output);
 }
 
-fn get_num(input: &str) -> u32  {
-    let digits: Vec<char> = input.chars().filter(|c| c.is_digit(10)).collect();
-    if digits.len() == 0 {
-        return 0 
+fn get_num(input: &str) -> u32 {
+    let digits: Vec<char> = input.chars().filter(|c| c.is_ascii_digit()).collect();
+    if digits.is_empty() {
+        return 0;
     }
     let n = digits[0].to_digit(10).unwrap_or(0);
-        n*10+digits.last().unwrap().to_digit(10).unwrap_or(0)
+    n * 10 + digits.last().unwrap().to_digit(10).unwrap_or(0)
 }
 
 fn part1(input: &str) -> u32 {
