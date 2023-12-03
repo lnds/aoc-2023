@@ -17,29 +17,38 @@ fn line_to_game(line: &str) -> Game {
     let mut p = line.split(':');
     let id = p
         .next()
-        .map(|s| i32::from_str_radix(&s[5..], 10).unwrap_or_default())
+        .map(|s| (s[5..]).parse::<i32>().unwrap_or_default())
         .unwrap_or_default();
     let mut game = Game {
-        id: id,
+        id,
         red: vec![],
         green: vec![],
         blue: vec![],
     };
     let rest = p.next().unwrap_or_default();
-    let mut p = rest.split(';');
-    while let Some(action) = p.next() {
-        let mut q = action.split(',');
-        while let Some(color) = q.next() {
+    let p = rest.split(';');
+    for action in p {
+        let q = action.split(',');
+        for color in q {
             let color = color.trim();
             if color.ends_with("blue") {
-                game.blue
-                    .push(i32::from_str_radix(&color[0..color.len() - 5], 10).unwrap_or_default());
+                game.blue.push(
+                    (color[0..color.len() - 5])
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             } else if color.ends_with("red") {
-                game.red
-                    .push(i32::from_str_radix(&color[0..color.len() - 4], 10).unwrap_or_default());
+                game.red.push(
+                    (color[0..color.len() - 4])
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             } else if color.ends_with("green") {
-                game.green
-                    .push(i32::from_str_radix(&color[0..color.len() - 6], 10).unwrap_or_default());
+                game.green.push(
+                    (color[0..color.len() - 6])
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             }
         }
     }

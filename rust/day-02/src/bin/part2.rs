@@ -1,13 +1,11 @@
 fn main() {
     let input = include_str!("./input1.txt");
-    let target = "Game 0: 12 red , 13 green , 14 blue";
-    let output = part2(target, input);
+    let output = part2(input);
     dbg!(output);
 }
 
 #[derive(Debug)]
 struct Game {
-    id: i32,
     red: Vec<i32>,
     green: Vec<i32>,
     blue: Vec<i32>,
@@ -15,47 +13,51 @@ struct Game {
 
 fn line_to_game(line: &str) -> Game {
     let mut p = line.split(':');
-    let id = p
-        .next()
-        .map(|s| i32::from_str_radix(&s[5..], 10).unwrap_or_default())
-        .unwrap_or_default();
     let mut game = Game {
-        id: id,
         red: vec![],
         green: vec![],
         blue: vec![],
     };
+    p.next();
     let rest = p.next().unwrap_or_default();
-    let mut p = rest.split(';');
-    while let Some(action) = p.next() {
-        let mut q = action.split(',');
-        while let Some(color) = q.next() {
+    let p = rest.split(';');
+    for action in p {
+        let q = action.split(',');
+        for color in q {
             let color = color.trim();
             if color.ends_with("blue") {
-                game.blue
-                    .push(i32::from_str_radix(&color[0..color.len() - 5], 10).unwrap_or_default());
+                game.blue.push(
+                    (color[0..color.len() - 5])
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             } else if color.ends_with("red") {
-                game.red
-                    .push(i32::from_str_radix(&color[0..color.len() - 4], 10).unwrap_or_default());
+                game.red.push(
+                    (color[0..color.len() - 4])
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             } else if color.ends_with("green") {
-                game.green
-                    .push(i32::from_str_radix(&color[0..color.len() - 6], 10).unwrap_or_default());
+                game.green.push(
+                    (color[0..color.len() - 6])
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             }
         }
     }
-    println!("{} {:?}", line, game);
     game
 }
 
-fn part2(target: &str, input: &str) -> i32 {
-    let g0 = line_to_game(target);
-    let red = g0.red[0];
-    let blue = g0.blue[0];
-    let green = g0.green[0];
+fn part2(input: &str) -> i32 {
     input
         .lines()
         .map(line_to_game)
-        .map(|g| g.red.iter().max().unwrap() * g.blue.iter().max().unwrap() * g.green.iter().max().unwrap())
+        .map(|g| {
+            g.red.iter().max().unwrap()
+                * g.blue.iter().max().unwrap()
+                * g.green.iter().max().unwrap()
+        })
         .sum()
 }
 
@@ -66,7 +68,6 @@ mod tests {
     #[test]
     fn it_works() {
         let result = part2(
-            "Game 0: 12 red, 13 green, 14 blue",
             "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
