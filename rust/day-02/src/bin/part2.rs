@@ -1,7 +1,7 @@
 fn main() {
     let input = include_str!("./input1.txt");
     let target = "Game 0: 12 red , 13 green , 14 blue";
-    let output = part1(target, input);
+    let output = part2(target, input);
     dbg!(output);
 }
 
@@ -47,7 +47,7 @@ fn line_to_game(line: &str) -> Game {
     game
 }
 
-fn part1(target: &str, input: &str) -> i32 {
+fn part2(target: &str, input: &str) -> i32 {
     let g0 = line_to_game(target);
     let red = g0.red[0];
     let blue = g0.blue[0];
@@ -55,12 +55,7 @@ fn part1(target: &str, input: &str) -> i32 {
     input
         .lines()
         .map(line_to_game)
-        .filter(|g| {
-            g.red.iter().all(|r| r <= &red)
-                && g.blue.iter().all(|b| b <= &blue)
-                && g.green.iter().all(|g| g <= &green)
-        })
-        .map(|g| g.id)
+        .map(|g| g.red.iter().max().unwrap() * g.blue.iter().max().unwrap() * g.green.iter().max().unwrap())
         .sum()
 }
 
@@ -70,7 +65,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = part1(
+        let result = part2(
             "Game 0: 12 red, 13 green, 14 blue",
             "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
@@ -78,6 +73,6 @@ Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green",
         );
-        assert_eq!(result, 8);
+        assert_eq!(result, 2286);
     }
 }
