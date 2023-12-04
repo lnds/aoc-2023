@@ -26,20 +26,16 @@ fn find_valid_parts(re: &Regex, prev: &str, line: &str, next: &str) -> Vec<i32> 
     for num in nums {
         let start = num.start();
         let end = num.end();
-        if start > 0 && bytes[start - 1] != b'.' {
-            result.push(num.as_str().parse::<i32>().unwrap_or(0))
-        } else if end < last && bytes[end] != b'.' {
-            result.push(num.as_str().parse::<i32>().unwrap_or_default())
-        } else if prev_bytes
-            [(if start > 0 { start - 1 } else { 0 })..cmp::min(end + 1, prev_bytes.len())]
-            .iter()
-            .any(|c| *c != b'.')
-        {
-            result.push(num.as_str().parse::<i32>().unwrap_or_default())
-        } else if next_bytes
-            [(if start > 0 { start - 1 } else { 0 })..cmp::min(end + 1, next_bytes.len())]
-            .iter()
-            .any(|c| *c != b'.')
+        if (start > 0 && bytes[start - 1] != b'.')
+            || end < last && bytes[end] != b'.'
+            || prev_bytes
+                [(if start > 0 { start - 1 } else { 0 })..cmp::min(end + 1, prev_bytes.len())]
+                .iter()
+                .any(|c| *c != b'.')
+            || next_bytes
+                [(if start > 0 { start - 1 } else { 0 })..cmp::min(end + 1, next_bytes.len())]
+                .iter()
+                .any(|c| *c != b'.')
         {
             result.push(num.as_str().parse::<i32>().unwrap_or_default())
         }

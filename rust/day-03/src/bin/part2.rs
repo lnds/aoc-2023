@@ -27,13 +27,13 @@ fn find_adjacent_parts(re: &Regex, prev: &str, line: &str, next: &str) -> Vec<i6
         }
         let mut top_parts = re
             .find_iter(prev_line)
-            .filter(|m| m.start() < &i + &2 && &i < &(m.end() + 1))
+            .filter(|m| m.start() < i + 2 && i < (m.end() + 1))
             .map(|m| m.as_str().parse::<i64>().unwrap_or_default())
             .collect();
 
         let mut bottom_parts = re
             .find_iter(next_line)
-            .filter(|m| m.start() < &i + &2 && &i < &(m.end() + 1))
+            .filter(|m| m.start() < i + 2 && i < (m.end() + 1))
             .map(|m| m.as_str().parse::<i64>().unwrap_or_default())
             .collect();
         let mut inline_parts = re
