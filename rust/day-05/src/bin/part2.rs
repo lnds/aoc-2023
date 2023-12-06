@@ -1,4 +1,5 @@
 use core::str::Lines;
+use itertools::Itertools;
 use regex::Regex;
 
 fn main() {
@@ -7,6 +8,23 @@ fn main() {
     dbg!(output);
 }
 
+#[derive(Debug)]
+struct SeedRange {
+    start: i64,
+    end: i64,
+}
+
+impl SeedRange {
+    fn new(pair: &[i64]) -> Self {
+        SeedRange {
+            start: pair[0],
+            end: pair[0] + pair[1],
+        }
+    }
+    fn find(&self, id: i64) -> bool {
+        id >= self.start && id < self.end
+    }
+}
 #[derive(Debug)]
 struct Range {
     destination: i64,
@@ -18,8 +36,8 @@ impl Range {
     fn new(line: &str) -> Self {
         let nums = str_to_nums(line);
         Range {
-            destination: nums[0],
-            source: nums[1],
+            destination: nums[1],
+            source: nums[0],
             length: nums[2],
         }
     }
@@ -78,49 +96,40 @@ fn part2(input: &str) -> Option<i64> {
     let line = lines.next().unwrap_or_default();
     let seeds: Vec<i64> = str_to_nums(&line[6..]);
     lines.next();
-    let seed_to_soil = scan_map("seed-to-soil", &mut lines);
-    let soil_to_fertilizer = scan_map("soil-to-fertilizer", &mut lines);
-    let fertilizer_to_water = scan_map("fertilizer-to-water", &mut lines);
-    let water_to_light = scan_map("water-to-light", &mut lines);
-    let light_to_temperature = scan_map("light-to-temperature", &mut lines);
-    let temperature_to_humidity = scan_map("temperature-to-humidity", &mut lines);
-    let humidity_to_location = scan_map("humidity-to-location", &mut lines);
-    // println!("seed {:?}, seeds);
-    // println!("seed_to_soil {:?}", seed_to_soil);
-    // println!("soil_to_fertilizer {:?}", soil_to_fertilizer);
-    // println!("fertilizer_to_water {:?}", fertilizer_to_water);
-    // println!("water_to_light {:?}", water_to_light);
-    // println!("light-to-temperature {:?}", light_to_temperature);
-    // println!("temperature_to_humidity {:?}", temperature_to_humidity);
-    // println!("humidity_to_location {:?}", humidity_to_location);
-    let mut min = i64::MAX;
-    for w in seeds.chunks(2) {
-        let start = w[0];
-        let end = start + w[1];
-        println!("START: {}, END: {}", start, end);
-        for seed in start..end {
-            //    println!("seed: {}", seed);
-            let soil = seed_to_soil.find(seed)?;
-            // println!("soil: {}", soil);
-            let fertilizer = soil_to_fertilizer.find(soil)?;
-            // println!("fertilizer: {}", fertilizer);
-            let water = fertilizer_to_water.find(fertilizer)?;
-            // println!("water: {}", water);
-            let light = water_to_light.find(water)?;
-            // println!("light: {}", light);
-            let temperature = light_to_temperature.find(light)?;
-            // println!("temperature: {}", temperature);
-            let humidity = temperature_to_humidity.find(temperature)?;
-            // println!("humidity: {}", humidity);
-            let location = humidity_to_location.find(humidity)?;
-            //   println!("location {}", location);
-            if location < min {
-                min = location;
-                println!("min: {}", min);
+    let soil_to_seed = scan_map("seed-to-soil", &mut lines);
+    let fertilizer_to_soil = scan_map("soil-to-fertilizer", &mut lines);
+    let water_to_fertilizer = scan_map("fertilizer-to-water", &mut lines);
+    let light_to_water = scan_map("water-to-light", &mut lines);
+    let temperature_to_light = scan_map("light-to-temperature", &mut lines);
+    let humidity_to_temperature = scan_map("temperature-to-humidity", &mut lines);
+    let location_to_humidity = scan_map("humidity-to-location", &mut lines);
+
+    let seed_ranges: Vec<_> = seeds
+        .chunks(2)
+        .map(SeedRange::new)
+        .sorted_by_key(|r| r.start)
+        .collect();
+    let mut start = i64::MAX;
+    for r in location_to_humidity.ranges.iter() {
+        if r.destination - r.length < start {
+            start = r.destination - r.length;
+        }
+    }
+    for location in start..seed_ranges.last().unwrap().end {
+        let humidity = location_to_humidity.find(location)?;
+        let temperature = humidity_to_temperature.find(humidity)?;
+        let light = temperature_to_light.find(temperature)?;
+        let water = light_to_water.find(light)?;
+        let fertilizer = water_to_fertilizer.find(water)?;
+        let soil = fertilizer_to_soil.find(fertilizer)?;
+        let seed = soil_to_seed.find(soil)?;
+        for r in seed_ranges.iter() {
+            if r.find(seed) {
+                return Some(location);
             }
         }
     }
-    Some(min)
+    None
 }
 
 #[cfg(test)]
