@@ -1,8 +1,9 @@
+use num::integer::Integer;
 use std::collections::HashMap;
 
 fn main() {
     let input = include_str!("./input1.txt");
-    let output = part1(input);
+    let output = part2(input);
     dbg!(output);
 }
 
@@ -22,35 +23,42 @@ impl State {
     }
 }
 
-fn part1(input: &str) -> i32 {
+fn part2(input: &str) -> usize {
     let mut lines = input.lines();
     let program = lines.next().unwrap().to_string();
     lines.next();
+    let mut starts = vec![];
     let machine = lines
         .map(|l| {
             let mut ls = l.split(" = ");
             let key = ls.next().map(|s| s.to_string()).unwrap().clone();
+            if key.ends_with('A') {
+                starts.push(key.clone())
+            }
             let state = State::new(ls.next().unwrap());
             (key, state)
         })
         .collect::<HashMap<String, State>>();
 
-    let mut steps = 0;
-    let mut key = "AAA".to_string();
-    let last = "ZZZ".to_string();
-    for c in program.chars().cycle() {
-        if key == last {
-            return steps;
+    let mut steps = vec![];
+    for key in starts.iter() {
+        let mut key = key.clone();
+        let mut count = 0;
+        for c in program.chars().cycle() {
+            if key.ends_with('Z') {
+                break;
+            }
+            let state = machine.get(&key);
+            if c == 'L' {
+                key = state.unwrap().left.to_string();
+            } else {
+                key = state.unwrap().right.to_string();
+            }
+            count += 1;
         }
-        let state = machine.get(&key);
-        if c == 'L' {
-            key = state.unwrap().left.to_string();
-        } else {
-            key = state.unwrap().right.to_string();
-        }
-        steps += 1;
+        steps.push(count);
     }
-    steps
+    steps.iter().fold(1, |acc, n| n.lcm(&acc))
 }
 
 #[cfg(test)]
@@ -59,24 +67,17 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = part1(
-            "RL
+        let result = part2(
+            "LR
 
-AAA = (BBB, CCC)
-BBB = (DDD, EEE)
-CCC = (ZZZ, GGG)
-DDD = (DDD, DDD)
-EEE = (EEE, EEE)
-GGG = (GGG, GGG)
-ZZZ = (ZZZ, ZZZ)",
-        );
-        assert_eq!(result, 2);
-        let result = part1(
-            "LLR
-
-AAA = (BBB, BBB)
-BBB = (AAA, ZZZ)
-ZZZ = (ZZZ, ZZZ",
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)",
         );
         assert_eq!(result, 6);
     }
