@@ -1,6 +1,6 @@
 fn main() {
     let input = include_str!("./input1.txt");
-    let output = part1(input);
+    let output = part2(input);
     dbg!(output);
 }
 
@@ -15,7 +15,7 @@ fn predict(nums: Vec<i64>) -> i64 {
     }
 }
 
-fn part1(input: &str) -> i64 {
+fn part2(input: &str) -> i64 {
     input
         .lines()
         .map(|line| line.split(' ').map(|s| s.parse::<i64>().unwrap()).collect())
@@ -29,7 +29,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = part1(
+        let result = part2(
             "0 3 6 9 12 15
 1 3 6 10 15 21
 10 13 16 21 30 45",

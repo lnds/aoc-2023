@@ -1,8 +1,9 @@
 use itertools::Itertools;
+use std::str;
 
 fn main() {
     let input = include_str!("./input1.txt");
-    let output = part1(input);
+    let output = part2(input);
     dbg!(output);
 }
 
@@ -27,9 +28,9 @@ impl HandType {
                 b'A' => 14,
                 b'K' => 13,
                 b'Q' => 12,
-                b'J' => 11,
+                b'J' => 1,
                 b'T' => 10,
-                b'0'..=b'9' => c - b'0',
+                b'2'..=b'9' => c - b'0',
                 _ => 0,
             })
             .collect();
@@ -45,14 +46,40 @@ impl HandType {
             .iter()
             .map(|v| v.len())
             .collect::<Vec<usize>>();
+        let has_j = cards.iter().any(|c| c == &1);
         match &clasi[..] {
             [5] => HandType::FiveOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4]),
+            [_, 4] if has_j => {
+                HandType::FiveOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4])
+            }
             [_, 4] => HandType::FourOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4]),
+            [2, 3] if has_j => {
+                HandType::FiveOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4])
+            }
             [2, 3] => HandType::FullHouse(cards[0], cards[1], cards[2], cards[3], cards[4]),
+            [_, _, 3] if has_j => {
+                HandType::FourOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4])
+            }
             [_, _, 3] => HandType::ThreeOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4]),
+            [_, 2, 2] if has_j => {
+                if grouped_cards[0][0] == &1 {
+                    HandType::FullHouse(cards[0], cards[1], cards[2], cards[3], cards[4])
+                } else {
+                    HandType::FourOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4])
+                }
+            }
             [_, 2, 2] => HandType::TwoPair(cards[0], cards[1], cards[2], cards[3], cards[4]),
+            [_, _, _, 2] if has_j => {
+                HandType::ThreeOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4])
+            }
             [_, _, _, 2] => HandType::OnePair(cards[0], cards[1], cards[2], cards[3], cards[4]),
-            _ => HandType::HighCard(cards[0], cards[1], cards[2], cards[3], cards[4]),
+            _ => {
+                if has_j {
+                    HandType::OnePair(cards[0], cards[1], cards[2], cards[3], cards[4])
+                } else {
+                    HandType::HighCard(cards[0], cards[1], cards[2], cards[3], cards[4])
+                }
+            }
         }
     }
 }
@@ -72,9 +99,10 @@ impl Hand {
     }
 }
 
-fn part1(input: &str) -> usize {
+fn part2(input: &str) -> usize {
     let mut hands: Vec<Hand> = input.lines().map(Hand::new).collect();
     hands.sort_by_key(|h| h.hand_type);
+    // println!("{:#?}", hands);
     hands
         .iter()
         .enumerate()
@@ -87,13 +115,13 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = part1(
+        let result = part2(
             "32T3K 765
 T55J5 684
 KK677 28
 KTJJT 220
 QQQJA 483",
         );
-        assert_eq!(result, 6440);
+        assert_eq!(result, 5905);
     }
 }
