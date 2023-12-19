@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 fn main() {
     let input = include_str!("./input1.txt");
-    let output = part1(input);
+    let output = part2(input, 1_000_000);
     dbg!(output);
 }
 
@@ -12,7 +12,7 @@ struct Galaxy {
     col: usize,
 }
 
-fn part1(input: &str) -> usize {
+fn part2(input: &str, expansion: usize) -> usize {
     let empty_rows: HashSet<_> = input
         .lines()
         .enumerate()
@@ -43,10 +43,18 @@ fn part1(input: &str) -> usize {
     for (i, g) in galaxies.iter().enumerate() {
         for o in galaxies[0..i].iter() {
             for row in usize::min(o.row, g.row)..usize::max(o.row, g.row) {
-                total_distance += if empty_rows.contains(&row) { 2 } else { 1 };
+                total_distance += if empty_rows.contains(&row) {
+                    expansion
+                } else {
+                    1
+                };
             }
             for col in usize::min(o.col, g.col)..usize::max(o.col, g.col) {
-                total_distance += if empty_cols.contains(&col) { 2 } else { 1 };
+                total_distance += if empty_cols.contains(&col) {
+                    expansion
+                } else {
+                    1
+                };
             }
         }
     }
@@ -59,7 +67,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = part1(
+        let result = part2(
             "...#......
 .......#..
 #.........
@@ -70,23 +78,22 @@ mod tests {
 ..........
 .......#..
 #...#.....",
+            10,
         );
-        assert_eq!(result, 374);
+        assert_eq!(result, 1030);
+        let result = part2(
+            "...#......
+.......#..
+#.........
+..........
+......#...
+.#........
+.........#
+..........
+.......#..
+#...#.....",
+            100,
+        );
+        assert_eq!(result, 8410);
     }
 }
-/*
- * 2,5,8
-  0123456789012
-0|....1........ (0,4)
-1|.........2... (1,9)
-2|3............ (2,0)
-3|.............
-4|.............
-5|........4.... (5,8)
-6|.5........... (6,1)
-7|............6 (7,12)
-8|.............
-9|.............
-0|.........7... (10,9)
-1|8....9......."(11,0),(11,5)
-*/
